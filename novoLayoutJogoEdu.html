@@ -1,0 +1,151 @@
+<html>
+	<body>
+		<script src="https://unpkg.com/kaboom/dist/kaboom.js"></script>
+		<script>
+			const FLOOR_HEIGHT = 1
+			const JUMP_FORCE = 800
+			const SPEED = 420
+
+			// initialize context
+			kaboom({
+				background: [182,219,255],
+			})
+			
+			//loadRoot("https://i.imgur.com/")
+
+			// load assets
+			//loadSprite ("chao","https://i.imgur.com/ClKBvq4.png")
+			loadSprite ("chao","https://i.imgur.com/SB23aM9.png")
+			loadSprite("hero","https://i.imgur.com/RCBS5rJ.png")
+			loadSprite ("barreira","https://i.imgur.com/nsaj875.png")
+			loadSprite("nuvem","https://i.imgur.com/SLUo5tu.png")	
+			//loadSound("somPulo", "http://i.codeskulptor-demos.commondatastorage.googleapis.com/pang/arrow.mp3")
+			//loadSound("wooosh", "/sounds/wooosh.mp3")
+
+			scene("game", () => {
+				
+				//const music = play("somPulo")
+				
+				// define gravity
+				gravity(2000)
+
+				// add a game object to screen
+				const player = add([
+					// list of components
+					sprite("hero"),
+					pos(80, 40),
+					area(),
+					body(),
+				])
+
+				// floor
+				//add([
+					//rect(width:width(), FLOOR_HEIGHT),
+					//width: width(),
+					//pos(0, height()),
+					//origin("botleft"),
+					//area(),
+					//solid(),
+					//color(168, 97, 44),
+					//sprite("chao"),
+				//])
+				
+				 add([
+					sprite("chao", {width: width(), FLOOR_HEIGHT}),
+					pos(0, height()),
+					area(),
+					solid(),
+					//origin("botleft")
+				  ]);
+				
+				
+
+				function jump() {
+					if (player.isGrounded()) {
+						player.jump(JUMP_FORCE)
+					}
+				}
+
+				// jump when user press space
+				onKeyPress("space", jump)
+				onClick(jump)
+
+				function spawnbarreira() {
+					// add barreira obj
+					add([
+						rect(48, rand(22, 96)),
+						area(),
+						//outline(4),
+						pos(width(), height() - FLOOR_HEIGHT),
+						origin("botleft"),
+						color(182, 219, 255),
+						move(LEFT, SPEED),
+						cleanup(),
+						sprite("barreira"),
+						"barreira"		
+					])
+
+					// wait a random amount of time to spawn next barreira
+					//wait(rand(0.4, 1.5), spawnbarreira)
+					wait(rand(0.7, 1.7), spawnbarreira)
+				}
+
+				// start spawning barreiras
+				spawnbarreira()
+
+				// lose if player collides with any game obj with tag "barreira"
+				player.onCollide("barreira", () => {
+					// go to "lose" scene and pass the score
+					go("lose", score)
+					addKaboom(player.pos)
+				})
+
+				// keep track of score
+				let score = 0
+
+				const scoreLabel = add([
+					text(score),
+					pos(24, 24),
+				])
+
+				// increment score every frame
+				onUpdate(() => {
+					score++
+					scoreLabel.text = score
+				})
+
+			})
+
+			scene("lose", (score) => {
+
+				add([
+					sprite("hero"),
+					pos(width() / 2, height() / 2 - 80),
+					scale(2),
+					origin("center"),
+					
+				])
+				
+				add([text('Try again!'), 
+				  pos(550, 50),
+				])
+				
+				// display score
+				add([
+					text(score),
+					pos(width() / 2, height() / 2 + 80),
+					scale(2),
+					origin("center"),
+				])
+
+				// go back to game with space is pressed
+				onKeyPress("space", () => go("game"))
+				onClick(() => go("game"))
+
+			})
+
+			go("game")
+
+		</script>		
+	</body>
+</html>
